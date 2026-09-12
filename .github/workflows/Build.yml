@@ -17,7 +17,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Gerar artefato ZIP
-        run: zip -r pipeline-demo.zip .
+        run: zip -r pipeline-demo.zip . -x ".git/*"
+
+      - name: Verificar conteúdo do artefato
+        run: unzip -l pipeline-demo.zip
 
       - name: Publicar artefato
         uses: actions/upload-artifact@v4

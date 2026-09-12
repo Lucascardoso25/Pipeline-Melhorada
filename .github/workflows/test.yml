@@ -1,0 +1,60 @@
+name: Test
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types:
+      - completed
+
+jobs:
+
+  qualidade:
+    name: Testes de qualidade
+
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Baixar artefato
+        uses: actions/download-artifact@v4
+        with:
+          name: codigo-buildado
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+
+      - name: Extrair artefato
+        run: unzip pipeline-demo.zip
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Instalar dependências de desenvolvimento
+        run: pip install -r requirements-dev.txt
+
+      - name: Executar testes
+        run: pytest -v
+
+
+  deploy:
+    name: Deploy (simulado)
+
+    needs: qualidade
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Simular deploy
+        run: |
+          echo "Iniciando deploy simulado..."
+          echo "Empacotando aplicação..."
+          echo "Enviando para o ambiente de produção (fake)..."
+          echo "Deploy concluído com sucesso!"
